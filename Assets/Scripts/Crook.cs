@@ -10,19 +10,6 @@ public class Crook : MonoBehaviour
     private Transform[] _wayPoints;
     private int _numberCurrentWayPoint;
     private Vector3 _currentWayPoint;
-    private bool _isEntered = false;
-
-    public bool IsEntered => _isEntered;
-
-    public void Activite()
-    {
-        _isEntered = true;
-    }
-
-    public void Disable()
-    {
-        _isEntered = false;
-    }
 
     private void Start()
     {
@@ -30,8 +17,7 @@ public class Crook : MonoBehaviour
 
         for (int i = 0;  i < _way.childCount; i++)
         {
-            if (_way.GetChild(i).TryGetComponent<Transform>(out Transform wayPoint))
-                _wayPoints[i] = wayPoint;
+            _wayPoints[i] = _way.GetChild(i);
         }
 
         _currentWayPoint = _wayPoints[_numberCurrentWayPoint].position;

@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class AlarmSystem : MonoBehaviour
 {
-    [SerializeField] private DoorOpenTrigger _door;
     [SerializeField] private AudioSource _audioSource;
     [SerializeField] private float _delta = 0.2f;
     [SerializeField] private float _delay = 0.5f;
@@ -12,38 +11,33 @@ public class AlarmSystem : MonoBehaviour
     private float _minVolume = 0f;
     private float _maxVolume = 1f;
 
+    public bool IsWork { get; private set; } = false;
+
+    public void Handler()
+    {
+        Stop();
+        SetIsWork();
+        float targetVolume = IsWork ? _maxVolume : _minVolume;
+        _coroutine = StartCoroutine(Work(targetVolume));
+    }
+
     private void Awake()
     {
         _audioSource.volume = _minVolume;
     }
 
-    private void OnEnable()
+    private IEnumerator Work(float targetVolume)
     {
-        _door.OpenedCrook += Handler;
-    }
+        WaitForSeconds wait = new(_delay);
 
-    private void OnDisable()
-    {
-        _door.OpenedCrook -= Handler;
-    }
-
-    private void Handler(bool isEnteredCrook)
-    {
-        Stop();
-
-        _coroutine = StartCoroutine(Warning(isEnteredCrook));
-    }
-
-    private IEnumerator Warning(bool isEnteredCrook)
-    {
-        WaitForSeconds wait = new WaitForSeconds(_delay);
-        float target = isEnteredCrook ? _maxVolume : _minVolume;
-
-        while (Mathf.Approximately(_audioSource.volume, target) == false)
+        while (Mathf.Approximately(_audioSource.volume, targetVolume) == false)
         {
             yield return wait;
-            _audioSource.volume = Mathf.MoveTowards(_audioSource.volume, target, _delta);
+            _audioSource.volume = Mathf.MoveTowards(_audioSource.volume, targetVolume, _delta);
         }
+
+        if (_audioSource.volume == 0)
+            _audioSource.Stop();
     }
 
     private void Stop()
@@ -53,5 +47,23 @@ public class AlarmSystem : MonoBehaviour
             StopCoroutine(_coroutine);
             _coroutine = null;
         }
+    }
+
+    private void SetIsWork()
+    {
+        if (IsWork)
+            Disable();
+        else
+            Activate();
+    }
+
+    private void Activate()
+    {
+        IsWork = true;
+    }
+
+    private void Disable()
+    {
+        IsWork = false;
     }
 }
